@@ -1,0 +1,63 @@
+[
+  {
+    "code": "under_review",
+    "answer": "Application status: under_review",
+    "ticket": {
+      "service": "application_status",
+      "city": "Riyadh",
+      "request_id": "REF-1001",
+      "needs_clarification": false
+    },
+    "tool_result": {
+      "request_id": "REF-1001",
+      "status": "under_review"
+    },
+    "tool_calls": 1
+  },
+  {
+    "code": "needs_clarification",
+    "answer": "ما رقم مرجع الطلب؟",
+    "ticket": {
+      "service": "application_status",
+      "city": "unknown",
+      "request_id": null,
+      "needs_clarification": true
+    },
+    "tool_calls": 0
+  },
+  {
+    "code": "not_found",
+    "answer": "Unable to provide this application status.",
+    "ticket": {
+      "service": "application_status",
+      "city": "unknown",
+      "request_id": "REF-9999",
+      "needs_clarification": false
+    },
+    "tool_result": {
+      "request_id": "REF-9999",
+      "status": "not_found"
+    },
+    "tool_calls": 1
+  },
+  {
+    "code": "unsupported_action",
+    "answer": "This demo is read-only; no application was changed.",
+    "tool_calls": 0
+  },
+  {
+    "code": "access_denied",
+    "answer": "Unable to provide this application status.",
+    "ticket": {
+      "service": "application_status",
+      "city": "unknown",
+      "request_id": "REF-1002",
+      "needs_clarification": false
+    },
+    "tool_result": {
+      "request_id": "REF-1002",
+      "status": "access_denied"
+    },
+    "tool_calls": 1
+  }
+]
