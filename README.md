@@ -11,6 +11,6 @@ Student: Wejdan Alotaibi
 ## Progress
 
 - [x] Day 1: mock client and response contract
-- [ ] Day 2: structured tickets and read-only tool
+- [x] Day 2: structured tickets and read-only tool
 - [ ] Day 3: guardrails and golden tests
 - [ ] Day 4: cache, measurement and final report
