@@ -1,0 +1,14 @@
+{
+  "mode": "real_local_model",
+  "model": "google/flan-t5-small",
+  "model_revision": "0fc9ddf78a1e988dac52e2dac162b0ede4fd74ab",
+  "device": "cpu",
+  "context": "You can check your application status using its reference number.",
+  "question": "How can I check my application status?",
+  "answer": "Use its reference number",
+  "inference_seconds": 0.384,
+  "input_tokens": 34,
+  "output_tokens_including_special": 6,
+  "external_inference_api_calls": 0,
+  "review_required": "Check whether the answer tells the user to use the reference number. Reject unsupported fees, dates or status claims."
+}
