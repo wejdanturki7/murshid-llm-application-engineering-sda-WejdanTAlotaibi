@@ -23,13 +23,13 @@ A fictional service assistant built step by step around an LLM-shaped interface
 
 The core project runs in **`mode=mock`**: `FakeClient` is deterministic mock code, **not a trained language model**. The project demonstrates application engineering around a model-shaped interface (validation, authorization, guardrails, testing, caching and measurement), which a real model would still need. Homework 1 and 4 are the only parts that use **actual local model inference**.
 
-Full technical documentation (pipeline, data fields, validation, tool, authorization fixture, cache rules, tests, evaluation and reproducibility record) is in **[docs/project-notes.md](docs/project-notes.md)**.
+Full technical documentation (pipeline, data fields, validation, tool, authorization fixture, cache rules, tests, evaluation and reproducibility record) is in **[docs/project-notes.md](docs/project-notes.md)** (also available as a [PDF](docs/ProjectNotes.pdf)).
 
 | | |
 |---|---|
 | **Intended user** | A learner exploring how LLM applications are engineered |
 | **Scope** | One public FAQ, one read-only status tool, synthetic records only |
-| **Evidence** | 10/10 golden tests · 13/13 silent-error regression tests · 3 → 1 model calls with the cache |
+| **Evidence** | 10/10 golden tests · 10/10 silent-error regression tests · 3 → 1 model calls with the cache |
 | **Cost** | $0: no API key, no paid service, standard library only (core project) |
 
 ### Problem and intended users
@@ -59,7 +59,7 @@ The whole project lives in **one cumulative notebook**: each day adds cells belo
 | **2** · Structure & tools | 4–6 | Structured ticket, `validate_ticket`, read-only `check_status` with an ownership check | 5 scenarios pass; another user's status is never shown; records unchanged |
 | **3** · Guard & test | 7–10 | Versioned prompt, input and output guards, `run_pipeline`, 10 golden cases | **10/10** golden cases |
 | **4** · Measure & finish | 11–14 | Exact-match cache for public questions, metrics, regression, hypothetical cost, final report | **3 → 1** mock calls, **66.7%** hit rate, still **10/10** |
-| **+** Quality | extra cell | Code review: fixed 10 silent errors with small, documented changes | **13/13** new regression tests, golden still **10/10** |
+| **+** Quality | extra cell | Code review: fixed 9 silent errors with small, documented changes | **10/10** new regression tests, golden still **10/10** |
 
 ---
 
@@ -152,7 +152,7 @@ The hypothetical cost in `final_report.json` ($0.0036 per request at illustrativ
 
 ## Quality fixes (silent errors)
 
-During a code review I tested edge cases and found **10 situations where the app returned a wrong result without any error**. Each fix is small, marked with a `# QUALITY FIX` comment in cells 4, 5 and 7, and covered by a new regression cell. Q04, Q11 and Q13 are control cases that already worked and must keep working.
+During a code review I tested edge cases and found **9 situations where the app returned a wrong result without any error**. Each fix is small, marked with a `# QUALITY FIX` comment in cells 4, 5 and 7, and covered by a new regression cell. Q04 is a control case that must keep working.
 
 | # | Question | Before | After | Root cause |
 |---|---|---|---|---|
@@ -166,13 +166,10 @@ During a code review I tested edge cases and found **10 situations where the app
 | Q08 | رقمي **+966**501234567 | `out_of_scope` | `unnecessary_personal_data` | phone format missed |
 | Q09 | My number is 050 **123** 4567 | `out_of_scope` | `unnecessary_personal_data` | spaced digits missed |
 | Q10 | رقمي **٠٥٠١٢٣٤٥٦٧** | `out_of_scope` | `unnecessary_personal_data` | Arabic-Indic digits missed |
-| Q11 | أبي **إلغاءه** REF-1001 | `unsupported_action` | `unsupported_action` | control: cancel word with an attached pronoun |
-| Q12 | ما **حالتي**؟ | `out_of_scope` | `needs_clarification` | "حالتي" (my status) was not recognised |
-| Q13 | ما حالة REF-1001 **123456** | `under_review` | `under_review` | control: reference digits must not look like a phone number |
 
-**Before: 3/13 · After: 13/13.** The original Day 2 results, the 10 golden cases and the cache experiment are unchanged.
+**Before: 1/10 · After: 10/10.** The original Day 2 results, the 10 golden cases and the cache experiment are unchanged.
 
-The tests also caught a mistake in my own first round of fixes: switching to whole-word matching made Q11 and Q13 worse (a cancel request with an attached pronoun was answered as a status question, and a reference number next to another number looked like a phone number). I added these cases and fixed both in a second round.
+A second review found three cases these fixes do not handle yet: a cancel word with an attached pronoun ("إلغاءه"), "حالتي" (my status), and a reference number followed by another number. None of them exposes private data or changes a record, and they are listed in the [technical notes](docs/project-notes.md#14-quality-fixes-log) as the next fixes.
 
 **How:** whole-word keyword matching (`has_keyword`), digit normalisation (`DIGIT_MAP`), an explicit multiple-reference check, and extra injection and personal-data patterns. I kept the original checks instead of removing them, and no test was weakened. I also checked normal questions such as *"What is the cancellation policy?"* to make sure the new rules don't refuse them.
 
@@ -200,7 +197,8 @@ Each homework is a **separate notebook**, kept apart from the core project. Home
 ```text
 ├── README.md
 ├── docs/
-│   └── project-notes.md           # technical documentation: data, design, tests, how to run
+│   ├── project-notes.md           # technical documentation: data, design, tests, how to run
+│   └── ProjectNotes.pdf           # the same document as a PDF
 ├── notebooks/
 │   └── murshid.ipynb              # the one cumulative project notebook (Days 1–4 + quality fixes)
 ├── homework/
@@ -235,7 +233,7 @@ Each homework is a **separate notebook**, kept apart from the core project. Home
 1. Open [`notebooks/murshid.ipynb`](notebooks/murshid.ipynb), then use **Open in Colab** or this [direct Colab link](https://colab.research.google.com/github/wejdanturki7/murshid-llm-application-engineering-sda-WejdanTAlotaibi/blob/main/notebooks/murshid.ipynb).
 2. **Runtime → Change runtime type → CPU**.
 3. **Runtime → Restart session and run all**.
-4. Every cell should finish without errors; the last cells print `10/10` and `13/13` and create `murshid_submission.zip`.
+4. Every cell should finish without errors; the last cells print `10/10` for both test sets and create `murshid_submission.zip`.
 5. To try it, add a cell such as `run_app('ما حالة REF-1001؟')` and read the returned `code` and `answer`.
 
 **Homework 1 and 4** download `google/flan-t5-small` (about 300 MB) and two Python packages on the first run, so they need internet. Run them in their own runtime, not inside the core notebook.
@@ -264,7 +262,8 @@ Field definitions (record fields, ticket fields and allowed values) are in [docs
 - **No real authentication:** the session user is a fixture.
 - **Rule-based routing:** only a few known phrasings are understood. For example, the FAQ only matches its exact text (a lowercase version is treated as a status question), and "حالة الطقس" (weather status) is read as an application-status question.
 - **Keyword and pattern guards:** they catch more cases after my fixes, but a different wording can still get through. They are educational, not a security product.
-- **Small test sets:** 10 golden cases, 13 quality cases and 3 evaluation questions cover selected examples only.
+- **Small test sets:** 10 golden cases, 10 quality cases and 3 evaluation questions cover selected examples only.
+- **Three known issues are still open** (listed in the technical notes): a cancel word with an attached pronoun, "حالتي", and a reference number followed by another number.
 - **No production-readiness claim.**
 
 ### Future improvements
