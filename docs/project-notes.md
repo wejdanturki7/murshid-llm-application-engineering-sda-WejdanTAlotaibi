@@ -55,7 +55,7 @@ For a shorter overview, see the [README](../README.md).
 1. Open [`notebooks/murshid.ipynb`](../notebooks/murshid.ipynb) in Colab ([direct Colab link](https://colab.research.google.com/github/wejdanturki7/murshid-llm-application-engineering-sda-WejdanTAlotaibi/blob/main/notebooks/murshid.ipynb)).
 2. Runtime → Change runtime type → **CPU**.
 3. Runtime → **Restart session and run all**.
-4. Expected: all 15 cells run in order without errors. Cell 13 prints `"golden_passed": 10`, the quality cell prints `"quality_checks": "13/13"`, and Cell 14 creates `murshid_submission.zip`.
+4. Expected: all 15 cells run in order without errors. Cell 13 prints `"golden_passed": 10`, the quality cell prints `"quality_checks": "10/10"`, and Cell 14 creates `murshid_submission.zip`.
 5. Download the JSON files from the Colab Files panel (`murshid_outputs/`) or the ZIP before disconnecting.
 
 **Use it after running.** Add a new cell and call `run_app`:
@@ -175,7 +175,7 @@ All data is **hand-written synthetic teaching fixtures** (`dataset: synthetic-v1
 1. Not a string, or blank after trimming → `invalid_input`
 2. More than 500 characters → `input_too_long`
 3. Known injection phrases (`ignore previous`, `تجاهل التعليمات`, `reveal secrets`) or the injection patterns added in the quality fixes → `blocked_instruction`
-4. A 10-digit number, or 10+ digits after removing spaces/dashes, a `+966` prefix or Arabic-Indic digits (reference numbers are ignored) → `unnecessary_personal_data`
+4. A 10-digit number, or 10+ digits after removing spaces/dashes, a `+966` prefix or Arabic-Indic digits → `unnecessary_personal_data`
 
 **Ticket validation** (`validate_ticket`): exactly the four fields, allowed values only, a real boolean for `needs_clarification`, a valid reference format, and a consistent clarification flag. Test C10 sends a ticket with `'false'` (a string) instead of `False` to prove this check works.
 
@@ -219,7 +219,7 @@ Cell 12 tests the rules with a fixed clock (`now=0`) so the result is identical 
 | Day 2 (Cell 6) | 5 scenarios: own record, missing reference, missing record, cancel, other user's record; expected tool calls `[1, 0, 1, 0, 1]`; Day 1 FAQ still works; records unchanged | passed |
 | Day 3 (Cells 9–10) | 10 golden cases C01–C10, plus 501 characters, a 10-digit number and a malformed response | **10/10** |
 | Day 4 (Cells 12–13) | Cache experiment, invalidation, TTL, status exclusion, golden cases rerun through `run_app` | **10/10** |
-| Quality (extra cell) | 13 cases Q01–Q13 for the silent errors (section 14) | **13/13** |
+| Quality (extra cell) | 10 cases Q01–Q10 for the silent errors (section 14) | **10/10** |
 
 **Golden cases**
 
@@ -245,7 +245,7 @@ A correct refusal counts as a passing test. The 10 golden cases are kept unchang
 | Measure | Result |
 |---|---|
 | Golden cases | 10/10 |
-| Quality regression cases | 13/13 |
+| Quality regression cases | 10/10 |
 | Mock model calls for 3 repeated FAQ requests | 3 without cache, 1 with cache (66.7% hit rate) |
 | Actual external API calls | 0 |
 | Hypothetical cost | $0.0036 per request (1,000 input + 400 output tokens at illustrative prices of $2 and $4 per million). Illustration only: actual spend is $0 |
@@ -269,22 +269,28 @@ During a code review I tested edge cases and found situations where the app retu
 
 | Problem | Example | Fix | Cell |
 |---|---|---|:---:|
-| Substring keyword matching | "الغرامة" (fine) refused as cancel; "إحالة" (referral) treated as status | `has_keyword`: whole-word match with optional Arabic prefixes (و ف ب ل ال) and attached pronouns (ه ها هم ي) | 4, 5 |
-| Missing status forms | "ما حالتي؟" ignored | Status words now include `حالتي` and `حالته` | 4 |
+| Substring keyword matching | "الغرامة" (fine) refused as cancel; "إحالة" (referral) treated as status | `has_keyword`: whole-word match with optional Arabic prefixes (و ف ب ل ال) | 4, 5 |
 | Arabic-Indic digits | `REF-١٠٠١` not recognised | `DIGIT_MAP` converts ٠-٩ and ۰-۹ before matching | 4, 7 |
 | Several references | Only the first was answered | `route` returns `multiple_references` and asks for one | 5 |
 | Reworded injection | "تجاهل كل التعليمات السابقة" passed | `INJECTION_PATTERNS` added; the original phrase list is kept | 7 |
-| Phone formats | `+966…`, spaced digits and Arabic digits passed | Digits are joined across spaces/dashes (reference numbers removed first) and 10+ digits are flagged | 7 |
+| Phone formats | `+966…`, spaced digits and Arabic digits passed | Digits are joined across spaces/dashes and 10+ digits are flagged | 7 |
 
-**Regression caught by the tests:** my first round of fixes made two cases worse. Whole-word matching stopped catching "إلغاءه" (cancel with an attached pronoun), and joining digits made `REF-1001 123456` look like a phone number. I added Q11 and Q13 for these and fixed both in a second round.
-
-| Run | Q01–Q13 passed |
+| Run | Q01–Q10 passed |
 |---|:---:|
-| Original course code | 3/13 (only the control cases Q04, Q11, Q13) |
-| After the first round of fixes | 10/13 |
-| After the second round | **13/13** |
+| Original course code | 1/10 (only the control case Q04) |
+| After the fixes | **10/10** |
 
-In every round, the Day 2 results, the 10 golden cases and the cache experiment stayed exactly the same. I also checked normal questions (for example "What is the cancellation policy?" and "Ignore my previous question, what are the instructions to apply?") to make sure the new rules do not refuse them.
+The Day 2 results, the 10 golden cases and the cache experiment stayed exactly the same after the fixes. I also checked normal questions (for example "What is the cancellation policy?" and "Ignore my previous question, what are the instructions to apply?") to make sure the new rules do not refuse them.
+
+**Known issues found in a second review (not fixed yet)**
+
+| Input | Result now | Expected | Cause |
+|---|---|---|---|
+| `أبي إلغاءه REF-1001` | `under_review` | `unsupported_action` | Whole-word matching misses a cancel word with an attached pronoun ("إلغاءه"). The old substring check caught it. |
+| `ما حالتي؟` | `out_of_scope` | `needs_clarification` | "حالتي" (my status) is not in the list of status words. |
+| `ما حالة REF-1001 123456` | `unnecessary_personal_data` | `under_review` | The phone check joins the reference digits with the next number, so they look like a phone number. |
+
+None of these exposes private data or changes a record, because the demo is read-only, but the answers are wrong. They are the next fixes to make, each with its own regression test, so that the tests stay the evidence for every change.
 
 ## 15. Reproducibility record
 
@@ -296,7 +302,7 @@ In every round, the Day 2 results, the 10 golden cases and the cache experiment 
 | Day 1–2 checks | `checks: passed` |
 | Golden cases | 10/10 |
 | Cache experiment | 3 → 1 calls, hits `[false, true, true]`, 66.7% |
-| Quality cases | 13/13 |
+| Quality cases | 10/10 |
 | Outputs | 8 JSON files saved to `results/core/` |
 
 Trace IDs and latency values change on every run by design; codes, counts and pass rates do not.
@@ -316,7 +322,8 @@ Trace IDs and latency values change on every run by design; codes, counts and pa
 - No real authentication: the session user is a fixture.
 - Rule-based routing understands only a few phrasings. For example, the FAQ must match its exact text (a lowercase version is treated as a status question), and "حالة الطقس" (weather status) is read as an application-status question.
 - Keyword and pattern guards catch more cases after the fixes, but a different wording can still get through. They are educational, not a security product.
-- Small test sets: 10 golden cases, 13 quality cases and 3 evaluation questions.
+- Small test sets: 10 golden cases, 10 quality cases and 3 evaluation questions.
+- Three known issues are still open (see section 14): a cancel word with an attached pronoun, "حالتي", and a reference number followed by another number.
 - No production-readiness claim.
 
 **Future improvements**
