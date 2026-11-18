@@ -2,188 +2,251 @@
 
 # Murshid Mini
 
-A small service assistant built around an LLM-shaped interface, with validation, permissions, guards, tests and a safe cache.
+A fictional service assistant built step by step around an LLM-shaped interface
 
-**LLM Application Engineering (SDA-AIE-213)** · Instructor: Meaad Al-Marri
+**LLM Application Engineering · SDA-AIE-213**
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
-![Colab](https://img.shields.io/badge/Colab-CPU-F9AB00?logo=googlecolab&logoColor=white)
-![Tests](https://img.shields.io/badge/golden%20tests-10%2F10-2ea44f)
-![Cost](https://img.shields.io/badge/API%20cost-%240-0969da)
+![Colab](https://img.shields.io/badge/Google%20Colab-CPU%20only-F9AB00?logo=googlecolab&logoColor=white)
+![Golden tests](https://img.shields.io/badge/golden%20tests-10%2F10-2ea44f)
+![API cost](https://img.shields.io/badge/API%20cost-%240-0969da)
 
-[What I built](#what-i-built-each-day) · [How it works](#how-a-question-is-handled) · [Silent errors](#silent-errors-i-found-and-fixed) · [Homework](#homework) · [Run it](#how-to-run)
+[Overview](#overview) · [How it works](#how-it-works) · [Results](#results) · [Quality fixes](#quality-fixes-silent-errors) · [Homework](#homework) · [Run it](#run-it-yourself) · [Limitations](#limitations)
 
 </div>
 
 ---
 
-## About
+## Overview
 
-Murshid Mini is a fictional service assistant. It answers one public question in Arabic or English, tells a user the status of their own application, and refuses anything it shouldn't do. I built it over four days in a single Colab notebook, adding a few cells each day.
+**Murshid Mini** is a fictional government-service assistant. It answers a known service question in Arabic or English, looks up an application's status **only for its owner**, refuses unsafe or unsupported requests, tests its own behaviour, and caches public answers safely.
 
-The core project runs in `mode=mock`: there is no real language model behind it, and `FakeClient` returns fixed answers. The course is about the parts around the model (validation, permissions, guards, tests, caching), so the mock is enough for that. Everything runs on a free Colab CPU with Python's standard library, with no API key and no cost.
+The core project runs in **`mode=mock`**: `FakeClient` is a deterministic simulator, **not a real language model**. The project focuses on the engineering around a model (validation, authorization, guardrails, testing, caching and measurement), which a real model would still need.
 
-| At a glance | |
+| | |
 |---|---|
-| Golden tests | **10/10** |
-| Silent-error tests (after my fixes) | **10/10** (was 1/10 before) |
-| Model calls for 3 repeated questions | **3 → 1** with the cache (66.7% hit rate) |
-| Homework | **4/4** done, including a real model on CPU |
-| API spend | **$0** |
+| **Intended user** | A learner exploring how LLM applications are engineered |
+| **Scope** | One public FAQ, one read-only status tool, synthetic records only |
+| **Evidence** | 10/10 golden tests · 10/10 silent-error regression tests · 3 → 1 model calls with the cache |
+| **Cost** | $0: no API key, no paid service, standard library only (core project) |
+
+### What it does and does not do
+
+| ✅ Does | ❌ Does not |
+|---|---|
+| Validates every input before it reaches the model | Use a live language model in the core project |
+| Turns a question into a validated, structured ticket | Provide real authentication (users are test fixtures) |
+| Returns a status only to the record's owner | Change any record: the tool is read-only |
+| Blocks prompt-injection phrases and unneeded personal data | Claim complete security: the guards are keyword and pattern based |
+| Caches only the two public FAQ answers, with versioned keys and a time limit | Cache private status answers |
+| Logs metrics without questions, references or owners | Claim production readiness |
 
 ---
 
-## What I built each day
+## The four-day journey
 
-| Day | Cells | What I added | Result |
+The whole project lives in **one cumulative notebook**: each day adds cells below the previous ones.
+
+| Day | Cells | What I built | Proof |
 |:---:|:---:|---|---|
-| 1 | 1–3 | `FakeClient`, the `ask()` function and a fixed response format (`trace_id`, `answer`, `model`, `latency_ms`) | 3 known questions answered correctly; empty input never reaches the model |
-| 2 | 4–6 | A structured ticket, ticket validation, and a read-only `check_status` tool that checks who owns the record | 5 scenarios pass; another user's status is never shown; records never change |
-| 3 | 7–10 | A versioned prompt, input and output guards, the full pipeline and 10 golden test cases | 10/10 |
-| 4 | 11–14 | A cache for the public question only, metrics, a regression run and the final report | 3 calls became 1; still 10/10 |
-| + | extra | Code review: fixed silent errors with small, documented changes | 10/10 new tests |
+| **1** · Foundations | 1–3 | `FakeClient`, `ask()` and a fixed response contract (`trace_id`, `answer`, `model`, `latency_ms`) | 3 known answers match; blank input never calls the model |
+| **2** · Structure & tools | 4–6 | Structured ticket, `validate_ticket`, read-only `check_status` with an ownership check | 5 scenarios pass; another user's status is never shown; records unchanged |
+| **3** · Guard & test | 7–10 | Versioned prompt, input and output guards, `run_pipeline`, 10 golden cases | **10/10** golden cases |
+| **4** · Measure & finish | 11–14 | Exact-match cache for public questions, metrics, regression, hypothetical cost, final report | **3 → 1** mock calls, **66.7%** hit rate, still **10/10** |
+| **+** Quality | extra cell | Code review: fixed 9 silent errors with small, documented changes | **10/10** new regression tests, golden still **10/10** |
 
 ---
 
-## How a question is handled
+## How it works
 
 ```mermaid
 flowchart TD
-    A["Question + session user"] --> B{"Cached public answer?"}
-    B -- "yes" --> Z["Answer"]
-    B -- "no" --> C{"Input guard"}
-    C -- "blocked" --> R1["Refusal"]
+    A["Question + trusted session user"] --> B{"Public FAQ already in cache?"}
+    B -- "hit" --> Z["Answer + trace_id + latency"]
+    B -- "miss" --> C{"Input guard"}
+    C -- "blank / too long / injection / personal data" --> R1["Safe refusal"]
     C -- "ok" --> D{"Router"}
-    D -- "cancel / 2+ references / missing reference" --> R2["Refuse or ask the user"]
-    D -- "status question" --> T["check_status: does it exist? is it yours?"]
-    D -- "public question" --> F["FakeClient"]
-    D -- "other" --> R3["out_of_scope"]
+    D -- "cancel request" --> R2["Read-only refusal"]
+    D -- "2+ references" --> R3["Ask for one reference"]
+    D -- "invalid ticket" --> R4["invalid_schema"]
+    D -- "reference missing" --> R5["Ask for the reference"]
+    D -- "status question" --> T["check_status tool: exists? owner?"]
+    D -- "public FAQ" --> F["FakeClient"]
+    D -- "anything else" --> R6["out_of_scope"]
     T --> V{"Output check"}
     F --> V
     V --> Z
 ```
 
-A few choices that matter:
+**Design decisions**
 
-- **Identity comes from the session**, not from the question. Knowing a reference number doesn't mean the record is yours.
-- **A missing record and someone else's record get the same reply**, so nobody can guess which records exist.
-- **Status answers are never cached**, because they belong to one user. Only the two public questions are cached. The cache key includes the prompt and directory versions, so changing either one stops old answers from being reused, and entries expire after 300 seconds.
-- **The metrics log only codes, counts and timings**, never questions or reference numbers.
-
-<details>
-<summary><b>Golden test cases (10/10)</b></summary>
-
-| Case | What it checks | Expected |
-|---|---|---|
-| C01, C02 | Public question in Arabic and English | `ok` |
-| C03 | My own application | `under_review` |
-| C04 | A record that doesn't exist | `not_found` |
-| C05 | No reference number | `needs_clarification`, no tool call |
-| C06 | A service that isn't available | `out_of_scope` |
-| C07 | Another user's application | `access_denied`, real status never shown |
-| C08 | Prompt injection | `blocked_instruction` |
-| C09 | Blank input | `invalid_input` |
-| C10 | A deliberately broken ticket | `invalid_schema` |
-
-A correct refusal counts as a pass.
-
-</details>
+- **Identity comes from the session, never from the question.** Knowing a reference number does not prove ownership.
+- **Same answer for "not found" and "not yours"**, so nobody can probe which records exist.
+- **Validate before acting:** the ticket's fields, types, allowed values and format are checked before any tool runs.
+- **The cache key includes the question, language, model, prompt version and directory version**, so changing the prompt or the directory automatically stops old answers from being reused. Entries expire after 300 seconds.
+- **Privacy-safe metrics:** only the result code, cache hit, call counts and latency are logged.
 
 ---
 
-## Silent errors I found and fixed
+## Results
 
-When I tried unusual inputs, I found cases where the app gave a wrong answer without showing any error. For example, "ما قيمة الغرامة؟" (what is the fine?) was refused as a cancel request, because the code searched for "الغ" anywhere in the text, and "الغرامة" contains it.
+All numbers below come from my own runs (see `results/`). Trace IDs and timings change between runs by design.
 
-| # | Question | Before | After | Cause |
+### Golden tests (Day 3, rerun on Day 4 through the cache)
+
+| Case | What it checks | Expected | Result |
+|---|---|---|:---:|
+| C01 / C02 | Public FAQ in Arabic / English | `ok` | Pass |
+| C03 | My own application | `under_review` | Pass |
+| C04 | Missing record | `not_found` | Pass |
+| C05 | Reference missing | `needs_clarification` (0 tool calls) | Pass |
+| C06 | Unavailable service | `out_of_scope` | Pass |
+| C07 | Another user's record | `access_denied`, private status never exposed | Pass |
+| C08 | Prompt injection | `blocked_instruction` | Pass |
+| C09 | Blank input | `invalid_input` | Pass |
+| C10 | Deliberately malformed ticket | `invalid_schema` | Pass |
+
+**10/10 passed.** A correct refusal counts as a passing test.
+
+### Cache experiment (Day 4)
+
+| Measurement | Without cache | With cache |
+|---|:---:|:---:|
+| Requests | 3 | 3 |
+| Mock model calls | 3 | **1** |
+| Cache hits | 0 | **2** (`false, true, true`) |
+| Hit rate | 0% | **66.7%** |
+
+I also verified that a new prompt version, a new directory version and an expired entry are all cache **misses**, and that status questions never enter the cache.
+
+The hypothetical cost in `final_report.json` ($0.0036 per request at illustrative prices) only shows *how* the cost is calculated. Actual API spend: **$0**.
+
+---
+
+## Quality fixes (silent errors)
+
+During a code review I tested edge cases and found **9 situations where the app returned a wrong result without any error**. Each fix is small, marked with a `# QUALITY FIX` comment in cells 4, 5 and 7, and covered by a new regression cell. Q04 is a control case that must keep working.
+
+| # | Question | Before | After | Root cause |
 |---|---|---|---|---|
-| Q01 | ما قيمة الغرامة؟ | `unsupported_action` | `out_of_scope` | "الغ" matched inside a word |
-| Q02 | ما المبالغ المطلوبة؟ | `unsupported_action` | `out_of_scope` | same |
-| Q03 | كيف أطلب إحالة؟ | `needs_clarification` | `out_of_scope` | "إحالة" contains "حالة" |
-| Q04 | ألغ طلبي REF-1001 | `unsupported_action` | `unsupported_action` | a real cancel request, should stay refused |
-| Q05 | ما حالة REF-١٠٠١؟ | `needs_clarification` | `under_review` | Arabic digits not recognised |
-| Q06 | ما حالة REF-1001 و REF-1002؟ | `under_review` | `multiple_references` | only the first reference was answered |
-| Q07 | تجاهل كل التعليمات السابقة | `out_of_scope` | `blocked_instruction` | one extra word got past the guard |
-| Q08 | رقمي +966501234567 | `out_of_scope` | `unnecessary_personal_data` | phone number not detected |
-| Q09 | My number is 050 123 4567 | `out_of_scope` | `unnecessary_personal_data` | spaces between digits |
-| Q10 | رقمي ٠٥٠١٢٣٤٥٦٧ | `out_of_scope` | `unnecessary_personal_data` | Arabic digits |
+| Q01 | ما قيمة **الغرامة**؟ | `unsupported_action` | `out_of_scope` | substring "الغ" read as *cancel* |
+| Q02 | ما **المبالغ** المطلوبة؟ | `unsupported_action` | `out_of_scope` | same substring bug |
+| Q03 | كيف أطلب **إحالة**؟ | `needs_clarification` | `out_of_scope` | "إحالة" contains "حالة" (*status*) |
+| Q04 | ألغ طلبي REF-1001 | `unsupported_action` | `unsupported_action` | control: a real cancel is still refused |
+| Q05 | ما حالة REF-**١٠٠١**؟ | `needs_clarification` | `under_review` | Arabic-Indic digits not recognised |
+| Q06 | ما حالة REF-1001 **و** REF-1002؟ | `under_review` | `multiple_references` | silently answered only the first reference |
+| Q07 | تجاهل **كل** التعليمات السابقة | `out_of_scope` | `blocked_instruction` | one extra word bypassed the guard |
+| Q08 | رقمي **+966**501234567 | `out_of_scope` | `unnecessary_personal_data` | phone format missed |
+| Q09 | My number is 050 **123** 4567 | `out_of_scope` | `unnecessary_personal_data` | spaced digits missed |
+| Q10 | رقمي **٠٥٠١٢٣٤٥٦٧** | `out_of_scope` | `unnecessary_personal_data` | Arabic-Indic digits missed |
 
-Before the fixes only Q04 passed (1/10); after them all 10 pass. I kept the changes small and marked each one with a `# QUALITY FIX` comment in cells 4, 5 and 7, and added a separate test cell for these cases. The original golden tests, the Day 2 results and the cache experiment give exactly the same results as before. I also checked normal questions like "What is the cancellation policy?" to make sure the new rules don't block them.
+**Before: 1/10 · After: 10/10.** The original Day 2 results, the 10 golden cases and the cache experiment are unchanged.
+
+**How:** whole-word keyword matching (`has_keyword`), digit normalisation (`DIGIT_MAP`), an explicit multiple-reference check, and extra injection and personal-data patterns. I kept the original checks instead of removing them, and no test was weakened. I also checked normal questions such as *"What is the cancellation policy?"* to make sure the new rules don't refuse them.
 
 ---
 
 ## Homework
 
-Each homework is in its own notebook in `homework/`.
+Each homework is a **separate notebook**, kept apart from the core project.
 
-| Day | Notebook | What I did | Result |
+| Day | Homework | What runs | My result |
 |:---:|---|---|---|
-| 1 | [day1_real_model](homework/day1_real_model.ipynb) | Ran `google/flan-t5-small` on CPU | "Use its reference number" · 34 → 6 tokens · 0.384 s |
-| 2 | [day2_tools](homework/day2_tools.ipynb) | Dispatcher that allows only `check_status` and checks ownership | 7/7, records unchanged |
-| 3 | [day3_errors](homework/day3_errors.ipynb) | `raise`, `try` and `except` with three bad inputs and a corrected one | 3 errors caught, fixed input accepted |
-| 4 | [day4_evaluation](homework/day4_evaluation.ipynb) | Same model on three versions of the question | 3/3 keyword hits + manual review |
+| 1 | [Real model demo](homework/day1_real_model.ipynb) | `google/flan-t5-small` on CPU | Answer: *"Use its reference number"* · 34 input / 6 output tokens · 0.384 s |
+| 2 | [Tool-call validation](homework/day2_tools.ipynb) | Python dispatcher with an allowlist and an ownership check | **7/7** cases, records unchanged |
+| 3 | [Input errors](homework/day3_errors.ipynb) | `raise` / `try` / `except` with deliberate errors | 3 caught `ValueError`s, corrected input accepted |
+| 4 | [Real model evaluation](homework/day4_evaluation.ipynb) | 3 paraphrased questions, with tokens and timing | **3/3** keyword hits + manual review |
 
-In the evaluation, all three answers were grounded and invented nothing, but reading them showed the model mostly copies the end of the context (it kept "its" instead of "your"). The keyword check is weak: "Do not use a reference number" would also pass, which is why I reviewed each answer by hand.
+**What the evaluation showed:** all three answers were grounded and invented nothing, but the model mostly *extracted* the end of the context sentence (it kept "its" instead of "your"), and "Reference number" was too short for a good user experience. The keyword metric is weak on purpose: *"Do not use a reference number"* would also pass, so I reviewed every answer by hand.
 
-> Colab now uses Python 3.13 and `sentencepiece==0.2.0` doesn't install on it, so in homework 1 and 4 I changed it to `0.2.1` (there's a comment in the first cell).
+> **Environment note:** Colab now runs Python 3.13, and `sentencepiece==0.2.0` has no build for it, so I changed it to `0.2.1` in homework 1 and 4 (documented in each notebook).
 
 ---
 
-## Files
+## Repository structure
 
 ```text
-notebooks/murshid.ipynb     the project notebook (Days 1-4 + quality fixes)
-homework/                   the four homework notebooks
-results/core/               outputs of the project notebook
-                            (baseline, day2, day3, day4, final_report, metrics,
-                             quality_fixes_results, synthetic_data)
-results/day1/               output of homework 1
-results/day4/               output of homework 4
+├── README.md
+├── notebooks/
+│   └── murshid.ipynb              # the one cumulative project notebook (Days 1–4 + quality fixes)
+├── homework/
+│   ├── day1_real_model.ipynb
+│   ├── day2_tools.ipynb
+│   ├── day3_errors.ipynb
+│   └── day4_evaluation.ipynb
+└── results/
+    ├── core/                      # outputs of the project notebook
+    │   ├── baseline_results.json      # Day 1
+    │   ├── day2_results.json          # Day 2
+    │   ├── day3_results.json          # Day 3: 10 golden cases
+    │   ├── day4_results.json          # Day 4: cache experiment
+    │   ├── final_report.json          # all results + limits
+    │   ├── metrics.json               # privacy-safe request log
+    │   ├── quality_fixes_results.json # silent-error regression tests
+    │   └── synthetic_data.json        # the fake data used
+    ├── day1/live_demo_result.json     # homework 1 output
+    └── day4/evaluation_result.json    # homework 4 output
 ```
 
-## How to run
+`results/core` holds the **project** outputs; `results/day1` and `results/day4` hold the outputs of the two homeworks that produce JSON files.
 
-1. Open [notebooks/murshid.ipynb in Colab](https://colab.research.google.com/github/wejdanturki7/murshid-llm-application-engineering-sda-WejdanTAlotaibi/blob/main/notebooks/murshid.ipynb).
-2. Choose a CPU runtime.
-3. **Runtime → Restart session and run all.** It finishes in a few seconds and prints 10/10.
+---
 
-Homework 1 and 4 download the model (about 300 MB) the first time, so they need internet. I ran them in separate runtimes from the project.
+## Run it yourself
 
-## Data
+**Core project (no install, no key, runs in a few seconds):**
 
-All data is made up for practice:
+1. Open [`notebooks/murshid.ipynb` in Colab](https://colab.research.google.com/github/wejdanturki7/murshid-llm-application-engineering-sda-WejdanTAlotaibi/blob/main/notebooks/murshid.ipynb).
+2. **Runtime → Change runtime type → CPU**.
+3. **Runtime → Restart session and run all**.
+4. Every cell should finish without errors; the last cells print `10/10` and create `murshid_submission.zip`.
 
-- `REF-1001` belongs to `demo-user-1` (status `under_review`)
-- `REF-1002` belongs to `demo-user-2` (used to test access denial)
-- `REF-9999` doesn't exist (used to test not found)
-- The logged-in user is always `demo-user-1`
+**Homework 1 and 4** download `google/flan-t5-small` (about 300 MB) and two Python packages on the first run, so they need internet. Run them in their own runtime, not inside the core notebook.
+
+---
+
+## Dataset
+
+All data is **synthetic and hand-written** for teaching. No real people, records or identifiers.
+
+| Item | Value |
+|---|---|
+| Public answer | Arabic and English: check your status using your reference number |
+| `REF-1001` | owner `demo-user-1`, status `under_review` |
+| `REF-1002` | owner `demo-user-2`, status `approved` (used to test access denial) |
+| `REF-9999` | intentionally missing (used to test not found) |
+| Session user | `demo-user-1` (a test fixture, not real authentication) |
+
+---
 
 ## Limitations
 
-- No real language model in the project, so 10/10 says nothing about how a real model would do.
-- No real login: the user is a fixed test value.
-- The router only understands a few phrasings.
-- The guards are keyword and pattern checks. They catch more after my fixes, but a different wording can still get through.
-- The test sets are small (10 golden cases, 10 quality cases, 3 evaluation questions).
-- Not meant for production.
+- **No live language model** in the core project: `FakeClient` returns fixed answers, so 10/10 says nothing about real model quality.
+- **No real authentication:** the session user is a fixture.
+- **Rule-based routing:** only a few known phrasings are understood.
+- **Keyword and pattern guards:** they catch more cases after my fixes, but a different wording can still get through. They are educational, not a security product.
+- **Small test sets:** 10 golden cases, 10 quality cases and 3 evaluation questions cover selected examples only.
+- **No production-readiness claim.**
 
 ---
 
 ## What I learned
 
-The most important lesson for me was keeping the app's rules separate from the model: the code decides permissions, validation and guardrails, and those decisions aren't left to the model.
-
-The part that needed the most care was the cache. I had to be clear about which questions are public and safe to cache, and make sure status requests are never cached, so one user's data can't reach another user.
-
-If I continue this project, I'd connect it to a real LLM API instead of `FakeClient` and add a semantic evaluation that tests whether the model really understands different questions, not just the fixed texts.
+- **The application, not the model, must be in control.** The most important lesson was separating the app's logic and rules from the model itself: the code decides permissions, validation and guardrails instead of leaving those decisions to the model.
+- **The hardest part was drawing the cache boundary.** It needed careful thought to separate public questions that are safe to cache from status requests that must never be cached, so that no data leaks between users.
+- **Next step:** connect the app to a real LLM API instead of `FakeClient`, and add semantic evaluation that tests whether the model truly understands varied questions beyond the fixed texts.
 
 ---
 
+## Attribution
+
+Built as the project for **LLM Application Engineering (SDA-AIE-213)**, delivered within the [SDAIA Academy](https://github.com/SDAIAAcademy) training context, with instructor **Meaad Al-Marri**.
+Based on the course materials in [almiyead-rgb/murshid-llm-application-engineering-sda-aie-213](https://github.com/almiyead-rgb/murshid-llm-application-engineering-sda-aie-213).
+
+This attribution does not imply that SDAIA or SDAIA Academy endorsed or certified this implementation.
+
 <div align="center">
 
-**Wejdan Alotaibi**
-
-Course: LLM Application Engineering (SDA-AIE-213) · Instructor: Meaad Al-Marri · [SDAIA Academy](https://github.com/SDAIAAcademy)
-Based on the course materials in [almiyead-rgb/murshid-llm-application-engineering-sda-aie-213](https://github.com/almiyead-rgb/murshid-llm-application-engineering-sda-aie-213). This does not mean SDAIA endorsed this project.
+**Wejdan Alotaibi** · 2026
 
 </div>
