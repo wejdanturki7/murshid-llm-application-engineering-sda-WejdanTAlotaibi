@@ -1,0 +1,44 @@
+{
+  "mode": "real_local_model",
+  "model": "google/flan-t5-small",
+  "model_revision": "0fc9ddf78a1e988dac52e2dac162b0ede4fd74ab",
+  "generation": {
+    "do_sample": false,
+    "num_beams": 1,
+    "max_new_tokens": 48
+  },
+  "metric": "reference+number keyword proxy; NOT semantic accuracy",
+  "keyword_hits": 3,
+  "total": 3,
+  "external_inference_api_calls": 0,
+  "cases": [
+    {
+      "id": "E01",
+      "question": "How can I check my application status?",
+      "answer": "Use its reference number",
+      "reference_keyword_hit": true,
+      "input_tokens": 34,
+      "output_tokens_including_special": 6,
+      "inference_seconds": 0.378
+    },
+    {
+      "id": "E02",
+      "question": "What do I need to check my application status?",
+      "answer": "Reference number",
+      "reference_keyword_hit": true,
+      "input_tokens": 36,
+      "output_tokens_including_special": 4,
+      "inference_seconds": 0.186
+    },
+    {
+      "id": "E03",
+      "question": "How can I find out the status of my application?",
+      "answer": "Use its reference number",
+      "reference_keyword_hit": true,
+      "input_tokens": 37,
+      "output_tokens_including_special": 6,
+      "inference_seconds": 0.279
+    }
+  ],
+  "manual_review": "Check every answer for correct meaning and unsupported facts. Record failures; do not edit expected criteria to force a pass."
+}
