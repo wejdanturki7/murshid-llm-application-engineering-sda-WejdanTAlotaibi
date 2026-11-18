@@ -1,0 +1,78 @@
+{
+  "mode": "mock",
+  "passed": 10,
+  "total": 10,
+  "cases": [
+    {
+      "id": "Q01",
+      "passed": true,
+      "expected": "out_of_scope",
+      "code": "out_of_scope",
+      "proves": "\"الغرامة\" (fine) is not a cancel request"
+    },
+    {
+      "id": "Q02",
+      "passed": true,
+      "expected": "out_of_scope",
+      "code": "out_of_scope",
+      "proves": "\"المبالغ\" (amounts) is not a cancel request"
+    },
+    {
+      "id": "Q03",
+      "passed": true,
+      "expected": "out_of_scope",
+      "code": "out_of_scope",
+      "proves": "\"إحالة\" (referral) is not a status question"
+    },
+    {
+      "id": "Q04",
+      "passed": true,
+      "expected": "unsupported_action",
+      "code": "unsupported_action",
+      "proves": "a real cancel request is still refused"
+    },
+    {
+      "id": "Q05",
+      "passed": true,
+      "expected": "under_review",
+      "code": "under_review",
+      "proves": "a reference written in Arabic-Indic digits"
+    },
+    {
+      "id": "Q06",
+      "passed": true,
+      "expected": "multiple_references",
+      "code": "multiple_references",
+      "proves": "never answer only the first reference"
+    },
+    {
+      "id": "Q07",
+      "passed": true,
+      "expected": "blocked_instruction",
+      "code": "blocked_instruction",
+      "proves": "a reworded Arabic injection"
+    },
+    {
+      "id": "Q08",
+      "passed": true,
+      "expected": "unnecessary_personal_data",
+      "code": "unnecessary_personal_data",
+      "proves": "a phone number with +966"
+    },
+    {
+      "id": "Q09",
+      "passed": true,
+      "expected": "unnecessary_personal_data",
+      "code": "unnecessary_personal_data",
+      "proves": "a phone number with spaces"
+    },
+    {
+      "id": "Q10",
+      "passed": true,
+      "expected": "unnecessary_personal_data",
+      "code": "unnecessary_personal_data",
+      "proves": "a phone number in Arabic-Indic digits"
+    }
+  ],
+  "note": "Keyword and pattern guards are still not a complete defense."
+}
