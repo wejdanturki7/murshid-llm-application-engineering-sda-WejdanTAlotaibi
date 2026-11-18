@@ -1,0 +1,16 @@
+{
+  "service_directory": {
+    "ar": "يمكنك متابعة حالة طلبك باستخدام رقم المرجع.",
+    "en": "You can check your application status using its reference number."
+  },
+  "records": {
+    "REF-1001": {
+      "owner": "demo-user-1",
+      "status": "under_review"
+    },
+    "REF-1002": {
+      "owner": "demo-user-2",
+      "status": "approved"
+    }
+  }
+}

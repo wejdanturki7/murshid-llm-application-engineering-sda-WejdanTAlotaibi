@@ -1,0 +1,11 @@
+{
+  "without_cache_mock_calls": 3,
+  "with_cache_mock_calls": 1,
+  "cache_hit": [
+    false,
+    true,
+    true
+  ],
+  "hit_rate_percent": 66.7,
+  "actual_external_api_calls": 0
+}

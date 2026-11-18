@@ -1,0 +1,200 @@
+[
+  {
+    "trace_id": "a6c31977-abf8-4b0f-9652-b3aa72e43e6a",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.1959
+  },
+  {
+    "trace_id": "7ce75c8b-76b4-447a-acf7-dace1bf6b9d4",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.0865
+  },
+  {
+    "trace_id": "2d946345-2256-49d5-b0e2-f577f9e49b4d",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.0543
+  },
+  {
+    "trace_id": "a4a32526-12c5-426d-be92-47bf113ff62a",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.1988
+  },
+  {
+    "trace_id": "8ec9687b-ccf9-45d2-ba13-58ad03edc423",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": true,
+    "mock_calls": 0,
+    "tool_calls": 0,
+    "latency_ms": 0.0239
+  },
+  {
+    "trace_id": "a7d75f3c-d715-4817-99b9-63a3268aecd6",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": true,
+    "mock_calls": 0,
+    "tool_calls": 0,
+    "latency_ms": 0.0131
+  },
+  {
+    "trace_id": "e7d1bc62-15e1-4361-a4b7-90f2eeebb7a1",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.1232
+  },
+  {
+    "trace_id": "7d763e60-6442-4765-85db-210fc4f2c6f4",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.0805
+  },
+  {
+    "trace_id": "86ea67d8-379e-4b79-a24f-7c79b0d2e63d",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.0746
+  },
+  {
+    "trace_id": "e77a307a-6b1f-4945-884d-7f4593c1c9b9",
+    "mode": "mock",
+    "code": "under_review",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 1,
+    "latency_ms": 0.205
+  },
+  {
+    "trace_id": "ee5e1efd-f271-43da-9f96-d77d54727720",
+    "mode": "mock",
+    "code": "not_found",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 1,
+    "latency_ms": 0.0532
+  },
+  {
+    "trace_id": "2bbf27d7-a071-4476-a1c6-d3da24a422bb",
+    "mode": "mock",
+    "code": "access_denied",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 1,
+    "latency_ms": 0.0478
+  },
+  {
+    "trace_id": "6d0fc341-40ae-4086-b286-6fc1ce94e1ea",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.2007
+  },
+  {
+    "trace_id": "0199e8f1-b0ee-48a9-ac49-91324a4b595f",
+    "mode": "mock",
+    "code": "ok",
+    "cache_hit": false,
+    "mock_calls": 1,
+    "tool_calls": 0,
+    "latency_ms": 0.0968
+  },
+  {
+    "trace_id": "217a82f6-175a-425e-b6ef-d3af28547642",
+    "mode": "mock",
+    "code": "under_review",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 1,
+    "latency_ms": 0.0922
+  },
+  {
+    "trace_id": "a4297cfd-df9a-4a0a-a026-195196afb694",
+    "mode": "mock",
+    "code": "not_found",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 1,
+    "latency_ms": 0.063
+  },
+  {
+    "trace_id": "33575604-fc42-433d-b613-b2e76f0f22cb",
+    "mode": "mock",
+    "code": "needs_clarification",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 0,
+    "latency_ms": 0.0478
+  },
+  {
+    "trace_id": "cc22c584-535a-49b1-abd3-bc2056459f44",
+    "mode": "mock",
+    "code": "out_of_scope",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 0,
+    "latency_ms": 0.0473
+  },
+  {
+    "trace_id": "42049834-51c3-4bbb-b6e8-7eb9db8b4113",
+    "mode": "mock",
+    "code": "access_denied",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 1,
+    "latency_ms": 0.0553
+  },
+  {
+    "trace_id": "b2cae3b5-c2d9-4dfc-ac75-f171c46c503c",
+    "mode": "mock",
+    "code": "blocked_instruction",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 0,
+    "latency_ms": 0.0468
+  },
+  {
+    "trace_id": "70bd7ad3-59f6-4b76-aa11-d5e52ddbd71f",
+    "mode": "mock",
+    "code": "invalid_input",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 0,
+    "latency_ms": 0.0228
+  },
+  {
+    "trace_id": "358c3c34-74aa-4483-bbb0-4c5498987a85",
+    "mode": "mock",
+    "code": "invalid_schema",
+    "cache_hit": false,
+    "mock_calls": 0,
+    "tool_calls": 0,
+    "latency_ms": 0.0437
+  }
+]

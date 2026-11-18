@@ -1,0 +1,100 @@
+{
+  "project": "Murshid Mini",
+  "course": "SDA-AIE-213",
+  "mode": "mock",
+  "dataset": "synthetic-v1",
+  "golden_tests": {
+    "mode": "mock",
+    "passed": 10,
+    "total": 10,
+    "pass_rate": 100.0,
+    "cases": [
+      {
+        "id": "C01",
+        "passed": true,
+        "code": "ok",
+        "reasons": []
+      },
+      {
+        "id": "C02",
+        "passed": true,
+        "code": "ok",
+        "reasons": []
+      },
+      {
+        "id": "C03",
+        "passed": true,
+        "code": "under_review",
+        "reasons": []
+      },
+      {
+        "id": "C04",
+        "passed": true,
+        "code": "not_found",
+        "reasons": []
+      },
+      {
+        "id": "C05",
+        "passed": true,
+        "code": "needs_clarification",
+        "reasons": []
+      },
+      {
+        "id": "C06",
+        "passed": true,
+        "code": "out_of_scope",
+        "reasons": []
+      },
+      {
+        "id": "C07",
+        "passed": true,
+        "code": "access_denied",
+        "reasons": []
+      },
+      {
+        "id": "C08",
+        "passed": true,
+        "code": "blocked_instruction",
+        "reasons": []
+      },
+      {
+        "id": "C09",
+        "passed": true,
+        "code": "invalid_input",
+        "reasons": []
+      },
+      {
+        "id": "C10",
+        "passed": true,
+        "code": "invalid_schema",
+        "reasons": []
+      }
+    ]
+  },
+  "cache_experiment": {
+    "without_cache_mock_calls": 3,
+    "with_cache_mock_calls": 1,
+    "cache_hit": [
+      false,
+      true,
+      true
+    ],
+    "hit_rate_percent": 66.7,
+    "actual_external_api_calls": 0
+  },
+  "hypothetical_cost": {
+    "label": "Illustration only; zero actual API spend",
+    "input_tokens": 1000,
+    "output_tokens": 400,
+    "usd_per_million_input": 2.0,
+    "usd_per_million_output": 4.0,
+    "usd_per_request": 0.0036
+  },
+  "limits": [
+    "No live language model",
+    "No real authentication",
+    "Finite rule-based routing",
+    "Educational guards only",
+    "No production readiness claim"
+  ]
+}
