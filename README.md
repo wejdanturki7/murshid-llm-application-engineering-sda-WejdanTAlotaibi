@@ -243,7 +243,6 @@ All data is **synthetic and hand-written** for teaching. No real people, records
 Built as the project for **LLM Application Engineering (SDA-AIE-213)**, delivered within the [SDAIA Academy](https://github.com/SDAIAAcademy) training context, with instructor **Meaad Al-Marri**.
 Based on the course materials in [almiyead-rgb/murshid-llm-application-engineering-sda-aie-213](https://github.com/almiyead-rgb/murshid-llm-application-engineering-sda-aie-213).
 
-This attribution does not imply that SDAIA or SDAIA Academy endorsed or certified this implementation.
 
 <div align="center">
 
